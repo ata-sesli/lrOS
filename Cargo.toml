@@ -1,0 +1,24 @@
+[package]
+name = "lr_os"
+version = "0.1.0"
+edition = "2021"
+
+# This section tells Cargo to build a runnable binary executable.
+# By defining this and NOT a [lib] section, the warning will disappear.
+[[bin]]
+name = "lr_os"
+path = "src/lib.rs"
+test = false
+bench = false
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+
+[build-dependencies]
+cc = "1.2.39"
+
+[dependencies]
+# No dependencies are needed for now
