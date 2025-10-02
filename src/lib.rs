@@ -29,10 +29,10 @@ impl Uart {
     /// Initializes the UART. This sequence is from the PL011 technical manual and includes
     /// necessary memory barriers to prevent instruction reordering.
     pub fn init(&self) {
-        let cr = (self.base_address + UART_CR) as *mut u32;
-        let ibrd = (self.base_address + UART_IBRD) as *mut u32;
-        let fbrd = (self.base_address + UART_FBRD) as *mut u32;
-        let lcrh = (self.base_address + UART_LCRH) as *mut u32;
+        let cr = self.base_address.wrapping_add(UART_CR) as *mut u32;
+        let ibrd = self.base_address.wrapping_add(UART_IBRD) as *mut u32;
+        let fbrd = self.base_address.wrapping_add(UART_FBRD) as *mut u32;
+        let lcrh = self.base_address.wrapping_add(UART_LCRH) as *mut u32;
 
         unsafe {
             // Data Synchronization Barrier
@@ -80,7 +80,6 @@ impl Write for Uart {
 }
 
 // --- Kernel ---
-
 #[no_mangle]
 pub extern "C" fn kmain() -> ! {
     let mut uart = Uart::new(UART_BASE);
@@ -93,21 +92,6 @@ pub extern "C" fn kmain() -> ! {
 }
 
 #[panic_handler]
-fn panic(info: &PanicInfo) -> ! {
-    let mut uart = Uart::new(UART_BASE);
-    // No need to initialize again if it's already done, but it's safe to do so.
-    uart.init();
-
-    write!(uart, "Kernel Panic!\n").unwrap();
-    if let Some(location) = info.location() {
-        write!(
-            uart,
-            "Panic in file {} at line {}\n",
-            location.file(),
-            location.line()
-        )
-        .unwrap();
-    }
-
+fn panic(_info: &PanicInfo) -> ! {
     loop {}
 }
